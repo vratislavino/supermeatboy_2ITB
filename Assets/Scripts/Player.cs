@@ -12,6 +12,17 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float speed = 10;
 
+    [SerializeField]
+    private Transform groundCheck;
+
+    [SerializeField]
+    private LayerMask groundLayerMask;
+
+    [SerializeField]
+    private float jumpForce = 10;
+
+    private bool isGrounded;
+
     void Awake()
     {
         moveAction = InputSystem.actions.FindAction("Move");
@@ -22,12 +33,27 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        isGrounded = IsGrounded();
+
         var move = moveAction.ReadValue<Vector2>();
         rb.linearVelocityX = move.x * speed;
+
+        if (isGrounded && move.y > 0)
+            Jump();
 
         renderer.flipX = move.x < 0;
 
         animator.SetFloat("xspeed", Mathf.Abs(rb.linearVelocityX));
         animator.SetFloat("yspeed", rb.linearVelocityY);
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, 0.15f, groundLayerMask);
+    }
+
+    private void Jump()
+    {
+        rb.linearVelocityY = jumpForce;
     }
 }
